@@ -149,14 +149,18 @@ if chosen_model == options[0]:
 
     cap_id = "nlpconnect/vit-gpt2-image-captioning"
     image_processor = ViTImageProcessor.from_pretrained(cap_id)
-    tokenizer       = AutoTokenizer.from_pretrained(cap_id)
+    tokenizer       = AutoTokenizer.from_pretrained(cap_id, use_fast=True)
     model           = VisionEncoderDecoderModel.from_pretrained(cap_id).to("cpu")
 
 elif chosen_model == options[1]:
 
     image_processor = AutoImageProcessor.from_pretrained(MODEL_ID)
-    tokenizer       = AutoTokenizer.from_pretrained(MODEL_ID)
+    tokenizer       = AutoTokenizer.from_pretrained(MODEL_ID, use_fast=True)
     model           = VisionEncoderDecoderModel.from_pretrained(MODEL_ID).to("cpu")
+
+# Ensure tokenizer has a pad token
+if tokenizer.pad_token is None:
+    tokenizer.pad_token = tokenizer.eos_token
 
 
 def preprocess(batch):
@@ -171,9 +175,9 @@ def preprocess(batch):
 
         except Exception as e:
 
-            img = Image.new("RGB", (2,2), color = (0, 0, 0))
+            image = Image.new("RGB", (224, 224), color = (0, 0, 0))
 
-        images.append(img)
+        images.append(image)
     
     pix = image_processor(
         
@@ -187,7 +191,9 @@ def preprocess(batch):
         
         batch["caption"], 
         
-        padding="max_length", 
+        padding="max_length",
+        
+        truncation=True,
         
         max_length=32, 
         
@@ -210,9 +216,9 @@ args = TrainingArguments(
 
     output_dir=OUT_DIR,
     overwrite_output_dir=True,
-    per_device_train_batch_size=4,
-    gradient_accumulation_steps=1,
-    num_train_epochs=25,
+    per_device_train_batch_size=2,  # Reduced from 4
+    gradient_accumulation_steps=2,  # Increased to maintain effective batch size
+    num_train_epochs=5,  # Reduced from 25 for testing
     learning_rate=5e-5,
     weight_decay=0.01,
     eval_steps=200,
@@ -220,7 +226,8 @@ args = TrainingArguments(
     save_steps=400,
     save_total_limit=1,
     remove_unused_columns=False,
-    dataloader_num_workers=0,   #
+    dataloader_num_workers=0,
+    dataloader_pin_memory=False,
     report_to=[],
     
 )
@@ -233,6 +240,7 @@ trainer = Trainer(
     train_dataset=processed_ds["train"],
     eval_dataset=processed_ds["val"],
     data_collator=default_data_collator,
+    
 )
 
 train_res = trainer.train()

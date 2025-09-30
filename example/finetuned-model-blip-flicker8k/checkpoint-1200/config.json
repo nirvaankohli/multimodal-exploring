@@ -1,0 +1,60 @@
+{
+  "architectures": [
+    "VisionEncoderDecoderModel"
+  ],
+  "decoder": {
+    "_attn_implementation_autoset": true,
+    "_name_or_path": "cnmoro/tiny-image-captioning",
+    "add_cross_attention": true,
+    "attention_probs_dropout_prob": 0.1,
+    "classifier_dropout": null,
+    "dtype": "float32",
+    "hidden_act": "gelu",
+    "hidden_dropout_prob": 0.1,
+    "hidden_size": 128,
+    "initializer_range": 0.02,
+    "intermediate_size": 512,
+    "is_decoder": true,
+    "layer_norm_eps": 1e-12,
+    "max_position_embeddings": 512,
+    "model_type": "bert",
+    "num_attention_heads": 2,
+    "num_hidden_layers": 2,
+    "position_embedding_type": "absolute",
+    "type_vocab_size": 2,
+    "use_cache": true,
+    "vocab_size": 30522
+  },
+  "decoder_start_token_id": 101,
+  "dtype": "float32",
+  "encoder": {
+    "_attn_implementation_autoset": true,
+    "_name_or_path": "cnmoro/tiny-image-captioning",
+    "architectures": [
+      "ViTForImageClassification"
+    ],
+    "attention_probs_dropout_prob": 0.0,
+    "dtype": "float32",
+    "encoder_stride": 16,
+    "hidden_act": "gelu",
+    "hidden_dropout_prob": 0.0,
+    "hidden_size": 384,
+    "image_size": 224,
+    "initializer_range": 0.02,
+    "intermediate_size": 1536,
+    "layer_norm_eps": 1e-12,
+    "model_type": "vit",
+    "num_attention_heads": 6,
+    "num_channels": 3,
+    "num_hidden_layers": 12,
+    "patch_size": 16,
+    "pooler_act": "tanh",
+    "pooler_output_size": 384,
+    "qkv_bias": true
+  },
+  "is_encoder_decoder": true,
+  "model_type": "vision-encoder-decoder",
+  "pad_token_id": 0,
+  "tie_word_embeddings": false,
+  "transformers_version": "4.56.2"
+}
