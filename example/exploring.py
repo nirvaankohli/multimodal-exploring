@@ -133,12 +133,30 @@ ds = DatasetDict(
     }
 )
 
-from transformers import VisionEncoderDecoderModel, ViTImageProcessor, AutoTokenizer
-cap_id = "nlpconnect/vit-gpt2-image-captioning"
+from transformers import VisionEncoderDecoderModel, AutoImageProcessor, AutoTokenizer, ViTImageProcessor
 
-image_processor = ViTImageProcessor.from_pretrained(cap_id)
-tokenizer       = AutoTokenizer.from_pretrained(cap_id)
-model           = VisionEncoderDecoderModel.from_pretrained(cap_id).to("cpu")
+options = [
+    "nlpconnect/vit-gpt2-image-captioning",
+    "cnmoro/tiny-image-captioning"
+]
+
+chosen_model = options[1]
+
+
+MODEL_ID = chosen_model
+
+if chosen_model == options[0]:
+
+    cap_id = "nlpconnect/vit-gpt2-image-captioning"
+    image_processor = ViTImageProcessor.from_pretrained(cap_id)
+    tokenizer       = AutoTokenizer.from_pretrained(cap_id)
+    model           = VisionEncoderDecoderModel.from_pretrained(cap_id).to("cpu")
+
+elif chosen_model == options[1]:
+
+    image_processor = AutoImageProcessor.from_pretrained(MODEL_ID)
+    tokenizer       = AutoTokenizer.from_pretrained(MODEL_ID)
+    model           = VisionEncoderDecoderModel.from_pretrained(MODEL_ID).to("cpu")
 
 
 def preprocess(batch):
@@ -186,45 +204,6 @@ def preprocess(batch):
 
 processed_ds = ds.with_transform(preprocess)
 
-class AccuracyTrackingTrainer(Trainer):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.csv_file = "training_metrics.csv"
-        self.training_start_time = datetime.now()
-        
-        with open(self.csv_file, 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(['epoch', 'step', 'train_loss', 'eval_loss', 'learning_rate', 'timestamp'])
-        
-        print(f"Training metrics will be logged to: {self.csv_file}")
-    
-    def log(self, logs):
-        super().log(logs)
-        
-        epoch = logs.get('epoch', 0)
-        step = logs.get('step', 0)
-        train_loss = logs.get('train_loss', None)
-        eval_loss = logs.get('eval_loss', None)
-        learning_rate = logs.get('learning_rate', None)
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        
-        if train_loss is not None or eval_loss is not None:
-            with open(self.csv_file, 'a', newline='') as f:
-                writer = csv.writer(f)
-                writer.writerow([epoch, step, train_loss, eval_loss, learning_rate, timestamp])
-            
-            print(f"Step {step} - Epoch {epoch:.2f}")
-            if train_loss is not None:
-                print(f"  Train Loss: {train_loss:.4f}")
-            if eval_loss is not None:
-                print(f"  Eval Loss: {eval_loss:.4f}")
-            if learning_rate is not None:
-                print(f"  Learning Rate: {learning_rate:.2e}")
-            print(f"  Time: {timestamp}")
-            print("-" * 40)
-    
-    
-
 OUT_DIR = "finetuned-model-blip-flicker8k"
 
 args = TrainingArguments(
@@ -233,7 +212,7 @@ args = TrainingArguments(
     overwrite_output_dir=True,
     per_device_train_batch_size=4,
     gradient_accumulation_steps=1,
-    num_train_epochs=5,
+    num_train_epochs=1,
     learning_rate=5e-5,
     weight_decay=0.01,
     eval_steps=200,
@@ -241,14 +220,13 @@ args = TrainingArguments(
     save_steps=400,
     save_total_limit=1,
     remove_unused_columns=False,
-    dataloader_num_workers=0,
+    dataloader_num_workers=0,   #
     report_to=[],
-    evaluation_strategy="steps",  # Enable evaluation during training
     
 )
 
 
-trainer = AccuracyTrackingTrainer(
+trainer = Trainer(
 
     model=model,
     args=args,
@@ -259,27 +237,4 @@ trainer = AccuracyTrackingTrainer(
 
 train_res = trainer.train()
 trainer.save_model(OUT_DIR)
-tokenizer.save_pretrained(OUT_DIR)  
-def display_training_metrics():
-    print("\n" + "="*60)
-    print("TRAINING METRICS SUMMARY")
-    print("="*60)
-    
-    try:
-        df_metrics = pd.read_csv("training_metrics.csv")
-        
-        print(f"Total training steps: {len(df_metrics)}")
-        print(f"Final train loss: {df_metrics['train_loss'].dropna().iloc[-1]:.4f}")
-        print(f"Final eval loss: {df_metrics['eval_loss'].dropna().iloc[-1]:.4f}")
-        print(f"Best eval loss: {df_metrics['eval_loss'].dropna().min():.4f}")
-        
-        print("\nLast 10 training steps:")
-        print(df_metrics.tail(10).to_string(index=False))
-        
-        print(f"\nFull metrics saved to: training_metrics.csv")
-        
-    except Exception as e:
-        print(f"Error reading metrics: {e}")
-
-display_training_metrics()
 
