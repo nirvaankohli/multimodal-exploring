@@ -245,4 +245,5 @@ trainer = Trainer(
 
 train_res = trainer.train()
 trainer.save_model(OUT_DIR)
-
+image_processor.save_pretrained(OUT_DIR)
+tokenizer.save_pretrained(OUT_DIR)
