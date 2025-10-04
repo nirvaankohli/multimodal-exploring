@@ -1,88 +1,157 @@
-import os 
-from io import BytesIO
-from typing import List, Optional
+import os
+import sys
+from typing import List
 
-import torch
 from PIL import Image
-from transformers import (
-
-    AutoImageProcessor,
-    AutoTokenizer,
-    VisionEncoderDecoderModel
-
-)
-
+import torch
+from transformers import pipeline
 from dotenv import load_dotenv
 
 load_dotenv()
 
-MODEL_DIR = os.getenv("MODEL_DIR")
+BASE_URL = os.getenv("BASE_URL", "./")
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+def get_image_file(path, file_type: str = "single") -> List[str]:
 
-# -------------
-# Load Model
-# -------------
+    supported_types = (".png", ".jpg", ".jpeg", ".webp")
 
-model = VisionEncoderDecoderModel.from_pretrained(MODEL_DIR).to(device)
+    if file_type == "single":
 
-try:
-
-    processor = AutoImageProcessor.from_pretrained(MODEL_DIR)
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR, use_fast=True)
-
-except:
-
-    base_id = "cnmoro/tiny-image-captioning"
-    processor = AutoImageProcessor.from_pretrained(base_id)
-    tokenizer = AutoTokenizer.from_pretrained(base_id, use_fast=True)
-
-if tokenizer.pad_token is None:
-
-    tokenizer.pad_token = tokenizer.eos_token
-
-def caption_image(
+        if (not os.path.isfile(path)) or (not path.lower().endswith(supported_types)):
+            
+            print(f"Error: The file {path} does not exist or is not a supported image type.")
+            
+            sys.exit(1)
         
-    image_path: str,
-    max_length: int = 32,
-    num_beams: int = 3,
-    no_repeat_ngram_size: int = 2,
+        return [path]
 
-) -> str:
-    
-    """
-    
-    This is just to see if the model inference is working or not.
+    if isinstance(path, list):
+        
+        image_files: List[str] = []
+        
+        for p in path:
+            
+            if os.path.isfile(p) and p.lower().endswith(supported_types):
+                
+                image_files.append(p)
+            
+            else:
+                print(f"Warning: The file {p} does not exist or is not a supported image type. Skipping.")
 
-    """
+        if not image_files:
+            print("Error: No valid image files found.")
+            sys.exit(1)
+        return image_files
 
-    image = Image.open(image_path).convert("RGB")
-    image.show()
-    pixel_values = processor(images=image, return_tensors="pt").pixel_values.to(device)
+    if file_type == "dir":
+        if not os.path.isdir(path):
+            print(f"Error: The directory {path} does not exist or is not a directory.")
+            sys.exit(1)
 
-    with torch.no_grad():
+        image_files = [
+            os.path.join(path, f)
+            for f in os.listdir(path)
+            if f.lower().endswith(supported_types)
+        ]
 
-        output_ids = model.generate(
+        if not image_files:
+            print(f"Error: No supported image files found in directory {path}.")
+            sys.exit(1)
 
-            pixel_values=pixel_values,
-            max_length=max_length,
-            num_beams=num_beams,
-            early_stopping=True,
-            no_repeat_ngram_size=no_repeat_ngram_size,
+        image_files.sort()
+        return image_files
 
+    print("Error: Invalid file_type. Use 'single', 'dir', or provide a list of file paths.")
+    sys.exit(1)
+
+
+def load_Image(image_path: str, max_side: int = 512) -> Image.Image:
+
+
+    try:
+        image = Image.open(image_path).convert("RGB")
+    except Exception as e:
+        print(f"Error: Failed to open image '{image_path}': {e}")
+        sys.exit(1)
+
+    w, h = image.size
+    if max_side and max(w, h) > max_side:
+        if w >= h:
+            new_w = max_side
+            ratio = new_w / w
+            new_h = int(h * ratio)
+        else:
+            new_h = max_side
+            ratio = new_h / h
+            new_w = int(w * ratio)
+        image = image.resize((new_w, new_h), resample=Image.LANCZOS)
+
+    return image
+
+
+def main():
+    img_paths = "exampleimgs"
+
+    if isinstance(img_paths, str) and not img_paths.endswith((".png", ".jpg", ".jpeg", ".webp")):
+        
+        img_type = "dir"
+        img_paths = os.path.join(BASE_URL, img_paths)
+
+    if isinstance(img_paths, str):
+
+        img_type = "dir" if os.path.isdir(img_paths) else "single"
+
+        if img_type == "dir":
+
+            print(f"Loading images from directory: {img_paths}")
+
+            img_list = [
+                os.path.join(img_paths, f)
+                for f in os.listdir(img_paths)
+                if f.lower().endswith((".png", ".jpg", ".jpeg", ".webp"))
+            ]
+
+            print("Images found:", img_list)
+
+    else:
+        img_type = "list"
+
+    args = dict(
+        img_paths=img_paths,
+        img_type=img_type,
+        model = "Salesforce/blip-image-captioning-base",
+        device="cpu" if not torch.cuda.is_available() else "cuda",
+        max_new_tokens=24,
+        num_beams=4,
+        max_side=512,
+    )
+
+    captioner = pipeline(
+        task="image-to-text",
+        model=args["model"],
+        tokenizer=args["model"],
+        device=-1 if args["device"] == "cpu" else 0,
+    )
+
+    img_files = get_image_file(args["img_paths"], args["img_type"])
+
+    total = len(img_files)
+    for i, img_path in enumerate(img_files, start=1):
+
+        image = load_Image(img_path, args["max_side"])
+        
+        out = captioner(
+            image,
+            generate_kwargs={
+                "max_new_tokens": args["max_new_tokens"],
+                "num_beams": args["num_beams"],
+            },
         )
-    
-    caption = tokenizer.decode(output_ids[0], skip_special_tokens=True).strip()
-    
-    print("Caption for", image_path, ":")
 
-    return caption
+        caption = out[0].get("generated_text", "").strip() if out else ""
+        print(f"[{i}/{total}] {img_path} --> {caption}")
+
+
 
 if __name__ == "__main__":
-
-    print("Device:", device)
-
-
-    print(caption_image("example.jpg"))
-
-    print(caption_image("example1.jpg"))
+    main()
