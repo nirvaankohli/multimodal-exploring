@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Captioning API Docs</title>
+    <link rel="stylesheet" href="C:\Users\nirva\OneDrive\Projects\multimodal\multimodal-exploring\backend\static\index.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar">
+            <div class="logo">
+                <h2>Image Captioning API Docs</h2>
+            </div>
+            <ul class="nav-list">
+                <li class="nav-item active" data-section="quickstart">
+                    <span class="nav-icon" style="filter: grayscale(100%)">🚀</span>
+                    <span class="nav-text">Quickstart</span>
+                </li>
+                <li class="nav-item" data-section="endpoints">
+                    <span class="nav-icon" style="filter: grayscale(100%)">🔗</span>
+                    <span class="nav-text">Endpoints</span>
+                </li>
+                <li class="nav-item" data-section="get-api-key">
+                    <span class="nav-icon" style="filter: grayscale(100%)">🔑</span>
+                    <span class="nav-text">Get Your API Key</span>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header with Token Counter -->
+            <header class="header">
+                <div class="header-content">
+                    <h1>AI Caption Generator API</h1>
+                    <div class="header-actions">
+                        <div id="tokenCounter" class="token-counter">
+                            <span id="tokenCount">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Quickstart Section -->
+            <section id="quickstart" class="section active">
+                <div class="section-content">
+                    <h2>🚀 Quick Start</h2>
+                    <p class="section-description">
+                        Get started with a Caption Generator API in minutes. Generate accurate captions for your images using MMLs.
+                    </p>
+
+                    <div class="card">
+                        <h3>Features</h3>
+                        <ul class="feature-list">
+                            <li><span style="color: transparent; text-shadow: 0 0 0 #FF6000">🤖</span> MML powered image captioning!</li>
+                            <li><span style="color: transparent; text-shadow: 0 0 0 #FF6000">⚡</span> Fast and reliable API responses</li>
+                            <li><span style="color: transparent; text-shadow: 0 0 0 #FF6000">🔒</span> Secure API key auth</li>
+                            <li><span style="color: transparent; text-shadow: 0 0 0 #FF6000">📊</span> Token-based usage tracking (COINS SEIGE THEME :))</li>
+                            <li><span style="color: transparent; text-shadow: 0 0 0 #FF6000">🎯</span> High accuracy and descriptive caption generation</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h3>Getting Started</h3>
+                        <ol class="steps-list">
+                            <li>Generate your API key in the "Get Your API Key" section</li>
+                            <li>Use the API endpoints to generate captions</li>
+                            <li>Each request costs 10 tokens</li>
+                            <li>Monitor your token usage in the top-right corner</li>
+                        </ol>
+                    </div>
+
+                    <div class="card">
+                        <h3>Supported Formats</h3>
+                        <div class="format-grid">
+                            <div class="format-item">
+                                <span class="format-icon">🖼️</span>
+                                <span>JPEG</span>
+                            </div>
+                            <div class="format-item">
+                                <span class="format-icon">🖼️</span>
+                                <span>PNG</span>
+                            </div>
+                            <div class="format-item">
+                                <span class="format-icon">🖼️</span>
+                                <span>GIF</span>
+                            </div>
+                            <div class="format-item">
+                                <span class="format-icon">🖼️</span>
+                                <span>WebP</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Endpoints Section -->
+            <section id="endpoints" class="section">
+                <div class="section-content">
+                    <h2>🔗 API Endpoints</h2>
+                    <p class="section-description">
+                        Explore our API endpoints and test them directly in your browser.
+                    </p>
+
+                    <div class="api-tester">
+                        <div class="api-controls">
+                            <div class="card">
+                                <h3>Test Generate Caption</h3>
+                                <div class="form-group">
+                                    <label for="testImage">Select Test Image:</label>
+                                    <select id="testImage" class="form-select">
+                                        <option value="example.jpg">Example 1</option>
+                                        <option value="example1.jpg">Example 2</option>
+                                        <option value="example2.jpg">Example 3</option>
+                                        <option value="example3.jpg">Example 4</option>
+                                        <option value="example4.jpg">Example 5</option>
+                                    </select>
+                                </div>
+                                <div class="image-preview-container">
+                                    <img id="imagePreview" class="image-preview" src="/exampleimgs/example.jpg" alt="Selected test image">
+                                </div>
+                                <div class="form-group">
+                                    <label for="testApiKey">API Key:</label>
+                                    <input type="text" id="testApiKey" class="form-input" placeholder="Enter your API key">
+                                </div>
+                                <button id="testApiBtn" class="btn btn-primary">Test API</button>
+                            </div>
+                        </div>
+
+                        <div class="api-response">
+                            <div class="card">
+                                <h3>Response Preview</h3>
+                                <div id="responseContainer" class="response-container">
+                                    <div class="response-placeholder">
+                                        <span class="response-icon">🚀</span>
+                                        <p>Click "Test API" to see the response here</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Endpoint Documentation -->
+                    <div class="endpoint-docs">
+                        <div class="card">
+                            <h3>POST /generate-caption</h3>
+                            <p>Generate a caption for an uploaded image.</p>
+                            
+                            <h4>Headers</h4>
+                            <table class="params-table">
+                                <thead>
+                                    <tr>
+                                        <th>Header</th>
+                                        <th>Type</th>
+                                        <th>Required</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>X-API-KEY</td>
+                                        <td>string</td>
+                                        <td>Yes</td>
+                                        <td>Your API key for authentication</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <h4>Parameters</h4>
+                            <table class="params-table">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Type</th>
+                                        <th>Required</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>image</td>
+                                        <td>file</td>
+                                        <td>Yes</td>
+                                        <td>Image file to generate caption for</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <h4>Example Request (cURL)</h4>
+                            <div class="code-block">
+                                <code id="curlExample">
+curl -X POST api.nirvaankohli.com/imagecaptioning/generate-caption \
+  -H "X-API-KEY: YOUR_API_KEY" \
+  -F "image=@your_image.jpg"
+                                </code>
+                            </div>
+
+                            <h4>Example Response</h4>
+                            <div class="code-block">
+                                <code>
+<span class="punctuation">{</span>
+  <span class="property">"results"</span><span class="punctuation">:</span> <span class="punctuation">[</span>
+    <span class="punctuation">{</span>
+      <span class="property">"filename"</span><span class="punctuation">:</span> <span class="string">"your_image.jpg"</span><span class="punctuation">,</span>
+      <span class="property">"caption"</span><span class="punctuation">:</span> <span class="string">"A beautiful landscape with mountains and trees"</span>
+    <span class="punctuation">}</span>
+  <span class="punctuation">]</span><span class="punctuation">,</span>
+  <span class="property">"tokens_remaining"</span><span class="punctuation">:</span> <span class="number">40</span><span class="punctuation">,</span>
+  <span class="property">"tokens_used"</span><span class="punctuation">:</span> <span class="number">10</span>
+<span class="punctuation">}</span>
+                                </code>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>GET /healthz</h3>
+                            <p>Check the health status of the API service.</p>
+                            
+                            <h4>Parameters</h4>
+                            <p class="no-params">No parameters required.</p>
+
+                            <h4>Example Request (cURL)</h4>
+                            <div class="code-block">
+                                <code>
+curl -X GET api.nirvaankohli.com/imagecaptioning/healthz
+                                </code>
+                            </div>
+
+                            <h4>Example Response</h4>
+                            <div class="code-block">
+                                <code>
+<span class="punctuation">{</span>
+  <span class="property">"status"</span><span class="punctuation">:</span> <span class="string">"healthy"</span><span class="punctuation">,</span>
+  <span class="property">"device"</span><span class="punctuation">:</span> <span class="string">"cuda"</span><span class="punctuation">,</span>
+  <span class="property">"default_model"</span><span class="punctuation">:</span> <span class="string">"Salesforce/blip-image-captioning-base"</span>
+<span class="punctuation">}</span>
+                                </code>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>POST /generate-api-key</h3>
+                            <p>Generate a new API key with 200 starting tokens.</p>
+                            
+                            <h4>Parameters</h4>
+                            <p class="no-params">No parameters required.</p>
+
+                            <h4>Example Request (cURL)</h4>
+                            <div class="code-block">
+                                <code>
+curl -X POST api.nirvaankohli.com/imagecaptioning/generate-api-key \
+  -H "Content-Type: application/json"
+                                </code>
+                            </div>
+
+                            <h4>Example Response</h4>
+                            <div class="code-block">
+                                <code>
+<span class="punctuation">{</span>
+  <span class="property">"api_key"</span><span class="punctuation">:</span> <span class="string">"user_1234567890abcdef"</span><span class="punctuation">,</span>
+  <span class="property">"tokens"</span><span class="punctuation">:</span> <span class="number">50</span><span class="punctuation">,</span>
+  <span class="property">"message"</span><span class="punctuation">:</span> <span class="string">"API key generated successfully"</span>
+<span class="punctuation">}</span>
+                                </code>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>POST /check-tokens</h3>
+                            <p>Check the token balance for your API key.</p>
+                            
+                            <h4>Headers</h4>
+                            <table class="params-table">
+                                <thead>
+                                    <tr>
+                                        <th>Header</th>
+                                        <th>Type</th>
+                                        <th>Required</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>X-API-KEY</td>
+                                        <td>string</td>
+                                        <td>Yes</td>
+                                        <td>Your API key for authentication</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <h4>Example Request (cURL)</h4>
+                            <div class="code-block">
+                                <code>
+curl -X POST api.nirvaankohli.com/imagecaptioning/check-tokens \
+  -H "Content-Type: application/json" \
+  -H "X-API-KEY: YOUR_API_KEY"
+                                </code>
+                            </div>
+
+                            <h4>Example Response</h4>
+                            <div class="code-block">
+                                <code>
+<span class="punctuation">{</span>
+  <span class="property">"tokens"</span><span class="punctuation">:</span> <span class="number">40</span><span class="punctuation">,</span>
+  <span class="property">"api_key"</span><span class="punctuation">:</span> <span class="string">"user_1234567890abcdef"</span><span class="punctuation">,</span>
+  <span class="property">"owner"</span><span class="punctuation">:</span> <span class="string">"User_a1b2c3d4"</span>
+<span class="punctuation">}</span>
+                                </code>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>POST /whoami</h3>
+                            <p>Get information about your API key including owner and permissions.</p>
+                            
+                            <h4>Headers</h4>
+                            <table class="params-table">
+                                <thead>
+                                    <tr>
+                                        <th>Header</th>
+                                        <th>Type</th>
+                                        <th>Required</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>X-API-KEY</td>
+                                        <td>string</td>
+                                        <td>Yes</td>
+                                        <td>Your API key for authentication</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <h4>Example Request (cURL)</h4>
+                            <div class="code-block">
+                                <code>
+curl -X POST api.nirvaankohli.com/imagecaptioning/whoami \
+  -H "Content-Type: application/json" \
+  -H "X-API-KEY: YOUR_API_KEY"
+                                </code>
+                            </div>
+
+                            <h4>Example Response</h4>
+                            <div class="code-block">
+                                <code>
+<span class="punctuation">{</span>
+  <span class="property">"key_id"</span><span class="punctuation">:</span> <span class="string">"user_1234567890abcdef"</span><span class="punctuation">,</span>
+  <span class="property">"owner"</span><span class="punctuation">:</span> <span class="string">"User_a1b2c3d4"</span><span class="punctuation">,</span>
+  <span class="property">"scopes"</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">"All"</span><span class="punctuation">,</span> <span class="string">"User"</span><span class="punctuation">]</span>
+<span class="punctuation">}</span>
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="get-api-key" class="section">
+                <div class="section-content">
+                    <h2>🔑 Get Your API Key</h2>
+                    <p class="section-description">
+                        Generate your free API key to start using the caption generator. You'll receive 200 tokens to get started.
+                    </p>
+
+                    <div id="apiKeyCard" class="card">
+                        <h3>Generate API Key</h3>
+                        <p>Click the button below to generate your free API key. You'll start with 200 tokens, and each caption generation costs 10 tokens.</p>
+                        <button id="generateKeyBtn" class="btn btn-primary">Generate API Key</button>
+                    </div>
+
+                    <div id="apiKeySuccess" class="card success-card" style="display: none;">
+                        <h3>🎉 API Key Generated!</h3>
+                        <p>Your API key has been generated successfully. Keep it safe and don't share it with anyone.</p>
+                        
+                        <div class="api-key-display">
+                            <label>Your API Key:</label>
+                            <div class="key-container">
+                                <code id="generatedKey"></code>
+                                <button id="copyKeyBtn" class="btn btn-secondary">Copy</button>
+                            </div>
+                        </div>
+
+                        <div class="api-key-info">
+                            <h4>Important Notes:</h4>
+                            <ul>
+                                <li>You start with 200 tokens</li>
+                                <li>Each caption generation costs 10 tokens</li>
+                                <li>Your API key is stored locally in your browser</li>
+                                <li>Keep your API key secure and don't share it</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+    (function() {
+        const navItems = document.querySelectorAll('.nav-item');
+        const sections = document.querySelectorAll('.section');
+        const tokenCountEl = document.getElementById('tokenCount');
+        const tokenCounterEl = document.getElementById('tokenCounter');
+        const generateKeyBtn = document.getElementById('generateKeyBtn');
+        const apiKeyCard = document.getElementById('apiKeyCard');
+        const apiKeySuccess = document.getElementById('apiKeySuccess');
+        const generatedKeyEl = document.getElementById('generatedKey');
+        const copyKeyBtn = document.getElementById('copyKeyBtn');
+        const testApiBtn = document.getElementById('testApiBtn');
+        const testImage = document.getElementById('testImage');
+        const testApiKey = document.getElementById('testApiKey');
+        const responseContainer = document.getElementById('responseContainer');
+        const curlExample = document.getElementById('curlExample');
+        const imagePreview = document.getElementById('imagePreview');
+
+        let userApiKey = '';
+        let userTokens = 0;
+
+        function switchSection(targetSection) {
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.section === targetSection) {
+                    item.classList.add('active');
+                }
+            });
+
+            sections.forEach(section => {
+                section.classList.remove('active');
+                if (section.id === targetSection) {
+                    section.classList.add('active');
+                }
+            });
+        }
+
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const section = item.dataset.section;
+                switchSection(section);
+                window.location.hash = section;
+            });
+        });
+
+        function setCookie(name, value, days = 365) {
+
+            const expires = new Date(Date.now() + days * 864e5).toUTCString();
+            document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+        
+        }
+
+        function getCookie(name) {
+
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+
+            if (parts.length === 2) {
+                return decodeURIComponent(parts.pop().split(';').shift());
+            }
+            return null;
+       
+        }
+
+        function deleteCookie(name) {
+            
+            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+        
+        }
+
+        function clearAllData() {
+            deleteCookie('userApiKey');
+            userApiKey = '';
+            userTokens = 0;
+            updateTokenDisplay();
+            updateApiKeyDisplay();
+        }
+
+        async function refreshTokens() {
+            if (!userApiKey) {
+                userTokens = 0;
+                updateTokenDisplay();
+                return;
+            }
+            
+            try {
+                const response = await fetch('/check-tokens', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-API-KEY': userApiKey
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    userTokens = data.tokens || 0;
+                } else {
+                    clearAllData();
+                }
+            } catch (error) {
+                console.error('Error refreshing tokens:', error);
+                userTokens = 0;
+            }
+            
+            updateTokenDisplay();
+        }
+
+        function updateTokenDisplay() {
+            if (tokenCountEl) {
+                if (userApiKey && userTokens > 0) {
+                    tokenCountEl.innerHTML = `<a href="#get-api-key" class="token-link">🪙 ${userTokens} tokens</a>`;
+                } else {
+                    tokenCountEl.innerHTML = '<a href="#get-api-key" class="token-link">🔑 Get API Key</a>';
+                }
+            }
+        }
+
+        function updateApiKeyDisplay() {
+            if (userApiKey) {
+                apiKeyCard.style.display = 'none';
+                apiKeySuccess.style.display = 'block';
+                generatedKeyEl.textContent = userApiKey;
+                testApiKey.value = userApiKey;
+            } else {
+                apiKeyCard.style.display = 'block';
+                apiKeySuccess.style.display = 'none';
+                generatedKeyEl.textContent = '';
+                testApiKey.value = '';
+            }
+        }
+
+        async function loadUserData() {
+            const storedKey = getCookie('userApiKey');
+            if (storedKey) {
+                userApiKey = storedKey;
+                await refreshTokens();
+            } else {
+                userApiKey = '';
+                userTokens = 0;
+                updateTokenDisplay();
+            }
+            updateApiKeyDisplay();
+            updateCurlExample();
+        }
+
+
+        function displayResponse(data, status = 200, isError = false) {
+            const container = responseContainer;
+            
+
+            if (!isError && data.results && data.results.length > 0 && data.results[0].caption) {
+                const caption = data.results[0].caption;
+                const tokensRemaining = data.tokens_remaining;
+                
+                container.innerHTML = `
+                    <div class="response-header">
+                        <span class="status-code success">Status: ${status}</span>
+                    </div>
+                    <div class="response-body">
+                        <div class="caption-result">
+                            <h4>Generated Caption:</h4>
+                            <p class="caption-text">"${caption}"</p>
+                            ${tokensRemaining !== undefined ? `<p class="tokens-info">Tokens remaining: ${tokensRemaining}</p>` : ''}
+                        </div>
+                        <details class="raw-response">
+                            <summary>Raw JSON Response</summary>
+                            <pre><code>${JSON.stringify(data, null, 2)}</code></pre>
+                        </details>
+                    </div>
+                `;
+            } else {
+
+                container.innerHTML = `
+                    <div class="response-header">
+                        <span class="status-code ${isError ? 'error' : 'success'}">
+                            Status: ${status}
+                        </span>
+                    </div>
+                    <div class="response-body">
+                        <pre><code>${JSON.stringify(data, null, 2)}</code></pre>
+                    </div>
+                `;
+            }
+        }
+
+
+        function updateImagePreview() {
+            const selectedImage = testImage.value;
+            if (imagePreview) {
+                imagePreview.src = `/exampleimgs/${selectedImage}`;
+                imagePreview.alt = `Preview of ${selectedImage}`;
+            }
+        }
+
+
+        async function testGenerateCaption() {
+            const selectedImage = testImage.value;
+            const apiKey = testApiKey.value.trim();
+
+            if (!apiKey) {
+                displayResponse({error: 'API key is required'}, 400, true);
+                return;
+            }
+
+            try {
+                testApiBtn.textContent = 'Testing...';
+                testApiBtn.disabled = true;
+
+                const formData = new FormData();
+
+                const imageResponse = await fetch(`/exampleimgs/${selectedImage}`);
+                const imageBlob = await imageResponse.blob();
+                formData.append('image', imageBlob, selectedImage);
+
+                const response = await fetch('/generate-caption', {
+                    method: 'POST',
+                    headers: {
+                        'X-API-KEY': apiKey
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayResponse(data, response.status);
+
+                    if (apiKey === userApiKey) {
+                        userTokens = data.tokens_remaining || 0;
+                        updateTokenDisplay();
+                    }
+                } else {
+                    displayResponse(data, response.status, true);
+                }
+            } catch (error) {
+                displayResponse({error: error.message}, 500, true);
+            } finally {
+                testApiBtn.textContent = 'Test API';
+                testApiBtn.disabled = false;
+            }
+        }
+
+        function updateCurlExample() {
+            const apiKey = userApiKey || 'YOUR_API_KEY';
+            curlExample.textContent = `curl -X POST api.nirvaankohli.com/imagecaptioning/generate-caption \\
+  -H "X-API-KEY: ${apiKey}" \\
+  -F "image=@your_image.jpg"`;
+        }
+
+        async function generateApiKey() {
+            try {
+                generateKeyBtn.textContent = 'Generating...';
+                generateKeyBtn.disabled = true;
+
+                const response = await fetch('/generate-api-key', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    userApiKey = data.api_key;
+                    userTokens = data.tokens;
+                    setCookie('userApiKey', userApiKey);
+                    updateTokenDisplay();
+                    updateApiKeyDisplay();
+                    updateCurlExample();
+                } else {
+                    alert(data.error || 'Failed to generate API key');
+                }
+            } catch (error) {
+                console.error('Error generating API key:', error);
+                alert('Error generating API key');
+            } finally {
+                generateKeyBtn.textContent = 'Generate API Key';
+                generateKeyBtn.disabled = false;
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                copyKeyBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyKeyBtn.textContent = 'Copy';
+                }, 2000);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                copyKeyBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyKeyBtn.textContent = 'Copy';
+                }, 2000);
+            });
+        }
+
+        generateKeyBtn?.addEventListener('click', generateApiKey);
+        copyKeyBtn?.addEventListener('click', () => {
+            if (userApiKey) {
+                copyToClipboard(userApiKey);
+            }
+        });
+        testApiBtn?.addEventListener('click', testGenerateCaption);
+
+        testImage?.addEventListener('change', updateImagePreview);
+
+        tokenCounterEl?.addEventListener('click', (e) => {
+            if (e.target.classList.contains('token-link')) {
+                e.preventDefault();
+                switchSection('get-api-key');
+                window.location.hash = 'get-api-key';
+            }
+        });
+
+        testApiKey?.addEventListener('input', () => {
+            if (testApiKey.value === '' && userApiKey) {
+                setTimeout(() => {
+                    testApiKey.value = userApiKey;
+                }, 100);
+            }
+        });
+
+    
+        loadUserData();
+        
+        const hash = window.location.hash.slice(1);
+        if (hash && ['quickstart', 'endpoints', 'get-api-key'].includes(hash)) {
+            switchSection(hash);
+        }
+
+        window.clearCookiesTest = clearAllData;
+    })();
+    </script>
+</body>
+</html>

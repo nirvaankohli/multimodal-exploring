@@ -1,7 +1,7 @@
 # --------------
 # Imports
 # --------------
-import io, os, time, threading
+import io, os, time, threading, json, uuid, secrets
 from typing import List, Tuple
 from PIL import Image, UnidentifiedImageError
 from flask import Flask, render_template, request, redirect, url_for, jsonify, make_response
@@ -22,6 +22,10 @@ from transformers import pipeline
 load_dotenv()
 
 app = Flask(__name__)
+
+
+
+
 
 API_KEYS = [[i[0], i[1], i[2].split('*')] for i in (k.split("|") for k in os.getenv("API_KEYS", "").split(","))]
 ALLOWED_TYPE = {"image/jpeg", "image/png", "image/webp"}
@@ -53,6 +57,26 @@ _caption_lock = threading.Lock()
 
 KEYS  = {}
 
+# Load user tokens from JSON file
+USER_TOKENS_FILE = "user_tokens.json"
+
+def load_user_tokens():
+    """Load user tokens from JSON file"""
+    if os.path.exists(USER_TOKENS_FILE):
+        try:
+            with open(USER_TOKENS_FILE, 'r') as f:
+                return json.load(f)
+        except (json.JSONDecodeError, FileNotFoundError):
+            return {}
+    return {}
+
+def save_user_tokens(tokens_data):
+    """Save user tokens to JSON file"""
+    with open(USER_TOKENS_FILE, 'w') as f:
+        json.dump(tokens_data, f, indent=2)
+
+user_tokens_db = load_user_tokens()
+
 for i in range(len(API_KEYS)):
 
     key = API_KEYS[i]
@@ -75,24 +99,39 @@ for i in range(len(API_KEYS)):
 
 def verify_api_key(raw_header: str):
     
-    """
+
     
-    Except a raw API header in the following format:
+    if raw_header.startswith("user_"):
 
-    `
-    X-API-KEY: <key_id>.<plain_key>
-    `
+        user_tokens_db = load_user_tokens()
 
-    The `key_id` HAS to be one of the keys in the KEYS dictionary.
+        api_key = raw_header
 
-    """
 
-    if not raw_header or "." not in raw_header or raw_header.split(".")[0] not in KEYS:
+
+        if api_key in user_tokens_db:
+        
+            user_data = user_tokens_db[api_key]
 
         
+            rec = {
+                "hash": api_key,
+                "owner": user_data.get("owner", "User"),
+                "scopes": ["All", "User"],
+                "plaintext": api_key,
+                "tokens": user_data.get("tokens", 0)
+            }
+        
+            return rec, api_key
+        
+        return None, None
+    
+    if not raw_header or "." not in raw_header:
 
         return None, None
-
+    # Original API key verification for admin keys
+    if raw_header.split(".")[0] not in KEYS:
+        return None, None
 
     key_id, plaintext = raw_header.split(".")
 
@@ -104,7 +143,6 @@ def verify_api_key(raw_header: str):
 
         return rec, key_id
 
-    print("It happened because of no match:", h, rec["hash"])
     return None, None
 
 
@@ -117,6 +155,7 @@ def require_key(*, scopes=None):
         @wraps(fn)
 
         def wrapper(*args, **kwargs):
+
             
             key_header = request.headers.get("X-API-KEY")
 
@@ -124,13 +163,10 @@ def require_key(*, scopes=None):
 
             if not rec:
 
-                print(request.headers.get("X-API-KEY"))
-
+                
                 return jsonify({"error": "Unauthorized"}), 401
             if not any(item in scopes for item in rec["scopes"]):
 
-                print("It happened because of scope mismatch:", scopes, rec["scopes"])
-                print(key_header)
                 return jsonify({"error": "Forbidden"}), 403
             
             g.api_key = key_id
@@ -198,14 +234,30 @@ def load_model():
         else:
             captioner(dummy, generate_kwargs={"max_new_tokens": 4, "num_beams": 1})
 
+_model_loaded = False
 
+def init_app():
+
+    global _model_loaded
+    if not _model_loaded:
+        load_model()
+        _model_loaded = True
+
+
+init_app()
+
+
+from flask import render_template
 
 # --------------
+# Routes
+# --------------
+
 @app.route('/')
 
 def home():
 
-    return "Hello, this API is up and running!"
+    return render_template("index.html")
 
 @app.route('/healthz', methods=['GET'])
 
@@ -213,10 +265,84 @@ def healthz():
 
     return jsonify({"status": "healthy", "device": DEVICE, "default_model": MODEL_NAME}), 200
 
-@app.route('/generate-caption', methods=['POST'])
+@app.route('/generate-api-key', methods=['POST'])
+def generate_api_key():
+    """Generate a new API key for a user with 200 starting tokens"""
+    try:
 
+        api_key = f"user_{uuid.uuid4().hex}"
+        
+
+        user_data = {
+            "api_key": api_key,
+            "tokens": 200,
+            "owner": f"User_{secrets.token_hex(4)}",
+            "created_at": time.time(),
+            "usage": 0
+        }
+        
+
+        user_tokens_db[api_key] = user_data
+        save_user_tokens(user_tokens_db)
+        
+        return jsonify({
+            "api_key": api_key,
+            "tokens": 200,
+            "message": "API key generated successfully"
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"error": f"Failed to generate API key: {str(e)}"}), 500
+
+@app.route('/check-tokens', methods=['POST'])
 @require_key(scopes=["All"])
+def check_tokens():
 
+    try:
+
+        key_header = request.headers.get("X-API-KEY")
+        
+        if key_header and key_header.startswith("user_"):
+
+            user_data = user_tokens_db.get(key_header, {})
+            tokens = user_data.get("tokens", 0)
+            
+            return jsonify({
+                "tokens": tokens,
+                "api_key": key_header,
+                "owner": user_data.get("owner", "Unknown")
+            }), 200
+        
+        else:
+
+            return jsonify({
+                "tokens": "unlimited",
+                "api_key": key_header,
+                "owner": getattr(g, 'api_owner', 'Admin')
+            }), 200
+            
+    except Exception as e:
+        return jsonify({"error": f"Failed to check tokens: {str(e)}"}), 500
+
+def deduct_tokens(api_key: str, amount: int) -> bool:
+
+    if not api_key or not api_key.startswith("user_"):
+        return True
+    
+    if api_key in user_tokens_db:
+        user_data = user_tokens_db[api_key]
+        current_tokens = user_data.get("tokens", 0)
+        
+        if current_tokens >= amount:
+            user_data["tokens"] = current_tokens - amount
+            user_data["usage"] = user_data.get("usage", 0) + amount
+            save_user_tokens(user_tokens_db)
+            return True
+    
+    return False
+
+@app.route('/generate-caption', methods=['POST'])
+@require_key(scopes=["All"])
 def generate_caption():
 
     if 'image' not in request.files:
@@ -228,6 +354,20 @@ def generate_caption():
     if not files or files[0].filename == '':
 
         return jsonify({"error": "No selected file"}), 400 
+    
+    key_header = request.headers.get("X-API-KEY")
+    tokens_cost = 10
+
+    if key_header and key_header.startswith("user_"):
+
+        user_data = user_tokens_db.get(key_header, {})
+
+        available_tokens = user_data.get("tokens", 0)
+        
+        if available_tokens < tokens_cost:
+            return jsonify({
+                "error": f"Insufficient tokens. Required: {tokens_cost}, Available: {available_tokens}"
+            }), 402  # Payment Required
     
     try:
         override_max_new_tokens = int(request.args.get("max_new_tokens", MAX_NEW_TOKENS))
@@ -268,6 +408,12 @@ def generate_caption():
             results.append({"filename": file.filename, "error": f"Invalid image: {e}"})
 
     if to_process:
+        
+        if not deduct_tokens(key_header, tokens_cost):
+            return jsonify({
+                "error": "Insufficient tokens for processing",
+                "required_tokens": tokens_cost
+            }), 402
 
         gen_kwargs = {
 
@@ -314,12 +460,50 @@ def generate_caption():
                         to_process = to_process[len(batch):]
 
 
-    return jsonify({"results": results}), 200
+    response_data = {"results": results}
+
+    if key_header and key_header.startswith("user_"):
+
+        user_data = user_tokens_db.get(key_header, {})
+        response_data["tokens_remaining"] = user_data.get("tokens", 0)
+        response_data["tokens_used"] = tokens_cost
+
+    return jsonify(response_data), 200
+
+@app.route('/whoami', methods=['POST'])
+
+@require_key(scopes=["All"])
+
+def whoami():
+
+    key_id = getattr(g, 'api_key', None)
+    owner = getattr(g, 'api_owner', None)
+
+    rec = KEYS.get(key_id) if key_id else None
+    scopes = rec.get('scopes', []) if rec else []
+
+    return jsonify({
+
+        'key_id': key_id,
+
+        'owner': owner,
+
+        'scopes': scopes,
+
+    }), 200
+
+
+@app.route('/exampleimgs/<path:filename>')
+def serve_exampleimg(filename):
+
+    from flask import send_from_directory
+
+    base = os.path.join(os.path.dirname(__file__), 'exampleimgs')
+
+    return send_from_directory(base, filename)
 
     
 
 if __name__ == '__main__':
     
-    load_model()
-
     app.run(debug=True)
