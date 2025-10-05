@@ -6,7 +6,8 @@ Images/
 Images/*
 finetuned-model-blip-flicker8k/
 finetuned-model-blip-flicker8k/*
-
+.env.production
+.env.development
 # C extensions
 *.so
 
