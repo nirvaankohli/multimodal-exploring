@@ -1,3 +1,8 @@
+# Backend production files
+backend/.env
+backend/user_tokens.json
+backend/logs/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
