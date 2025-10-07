@@ -24,9 +24,6 @@ load_dotenv()
 app = Flask(__name__)
 
 
-
-
-
 API_KEYS = [[i[0], i[1], i[2].split('*')] for i in (k.split("|") for k in os.getenv("API_KEYS", "").split(","))]
 ALLOWED_TYPE = {"image/jpeg", "image/png", "image/webp"}
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
@@ -506,6 +503,5 @@ def serve_exampleimg(filename):
 
 if __name__ == '__main__':
 
-    port = int(os.getenv('PORT', 5000))
-    debug = os.getenv('DEBUG', 'True').lower() == 'true'
-    app.run(host='0.0.0.0', port=port, debug=debug)
+
+    app.run()

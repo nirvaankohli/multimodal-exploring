@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Captioning API Docs</title>
-    <link rel="stylesheet" href="C:\Users\nirva\OneDrive\Projects\multimodal\multimodal-exploring\backend\static\index.css">
+    <link rel="stylesheet" href="/static/index.css">
 </head>
 <body>
     <div class="container">
@@ -190,7 +190,7 @@
                             <h4>Example Request (cURL)</h4>
                             <div class="code-block">
                                 <code id="curlExample">
-curl -X POST api.nirvaankohli.com/imagecaptioning/generate-caption \
+curl -X POST e61ba3a6a119.ngrok-free.app/generate-caption \
   -H "X-API-KEY: YOUR_API_KEY" \
   -F "image=@your_image.jpg"
                                 </code>
@@ -223,7 +223,7 @@ curl -X POST api.nirvaankohli.com/imagecaptioning/generate-caption \
                             <h4>Example Request (cURL)</h4>
                             <div class="code-block">
                                 <code>
-curl -X GET api.nirvaankohli.com/imagecaptioning/healthz
+curl -X GET e61ba3a6a119.ngrok-free.app/healthz
                                 </code>
                             </div>
 
@@ -249,7 +249,7 @@ curl -X GET api.nirvaankohli.com/imagecaptioning/healthz
                             <h4>Example Request (cURL)</h4>
                             <div class="code-block">
                                 <code>
-curl -X POST api.nirvaankohli.com/imagecaptioning/generate-api-key \
+curl -X POST e61ba3a6a119.ngrok-free.app/generate-api-key \
   -H "Content-Type: application/json"
                                 </code>
                             </div>
@@ -293,7 +293,7 @@ curl -X POST api.nirvaankohli.com/imagecaptioning/generate-api-key \
                             <h4>Example Request (cURL)</h4>
                             <div class="code-block">
                                 <code>
-curl -X POST api.nirvaankohli.com/imagecaptioning/check-tokens \
+curl -X POST e61ba3a6a119.ngrok-free.app/check-tokens \
   -H "Content-Type: application/json" \
   -H "X-API-KEY: YOUR_API_KEY"
                                 </code>
@@ -338,7 +338,7 @@ curl -X POST api.nirvaankohli.com/imagecaptioning/check-tokens \
                             <h4>Example Request (cURL)</h4>
                             <div class="code-block">
                                 <code>
-curl -X POST api.nirvaankohli.com/imagecaptioning/whoami \
+curl -X POST e61ba3a6a119.ngrok-free.app/whoami \
   -H "Content-Type: application/json" \
   -H "X-API-KEY: YOUR_API_KEY"
                                 </code>
@@ -645,7 +645,7 @@ curl -X POST api.nirvaankohli.com/imagecaptioning/whoami \
 
         function updateCurlExample() {
             const apiKey = userApiKey || 'YOUR_API_KEY';
-            curlExample.textContent = `curl -X POST api.nirvaankohli.com/imagecaptioning/generate-caption \\
+            curlExample.textContent = `curl -X POST e61ba3a6a119.ngrok-free.app/generate-caption \\
   -H "X-API-KEY: ${apiKey}" \\
   -F "image=@your_image.jpg"`;
         }
