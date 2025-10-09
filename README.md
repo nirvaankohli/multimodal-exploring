@@ -4,9 +4,8 @@ A simple image captioning project split into two parts: training experiments and
 
 Video Demo:
 
-<video width="320" height="240" controls>
-  <source src="[video.mov](https://hc-cdn.hel1.your-objectstorage.com/s/v3/186de0e9070a823312293b2a4c7a37991b8c05d0_20251008-2251-13.1534307.mp4)" type="video/mp4">
-</video>
+https://hc-cdn.hel1.your-objectstorage.com/s/v3/186de0e9070a823312293b2a4c7a37991b8c05d0_20251008-2251-13.1534307.mp4
+
 ## What's This About?
 
 This project has two main parts:
